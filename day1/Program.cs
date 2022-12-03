@@ -8,29 +8,21 @@ namespace day1
     {
         static void Main(string[] args)
         {
-            //TODO: do that with linq you lazy fuck
-            List<int> ints = new List<int>();
-            string[] lines = System.IO.File.ReadAllLines(@"./input.txt");//.Select(line => Convert.ToInt32(line)).ToList<int>();
-            int val = 0;
+            string lines = System.IO.File.ReadAllText(@"./input.txt").Replace("\r", string.Empty);
+            string[] elves = lines.Split("\n\n");
 
-            foreach(string line in lines)
-            {
-                if (Int32.TryParse(line, out var temp)) val += Int32.Parse(line);
-                else
-                {
-                    ints.Add(val);
-                    val = 0;
-                } 
-            }
+            var we = 
+            elves.Select(x =>
+                x.Split().Select(a =>
+                    Int32.Parse(a)
+                )
+            ).Select(x => x.Sum());
 
             //part1
-            Console.WriteLine(ints.Max());
+            Console.WriteLine(we.Max());
 
             //part2
-            List<int> ints2 = ints.OrderBy(p => p).Reverse().Take(3).ToList<int>();
-            Console.WriteLine(ints2.Sum());
-            //ints2.ForEach(x => Console.WriteLine(x));
-            
+            Console.WriteLine(we.OrderBy(p => p).Reverse().Take(3).Sum());
         }
     }
 }

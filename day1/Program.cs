@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Collections.Generic;
 
 namespace day1
 {
@@ -8,8 +7,8 @@ namespace day1
     {
         static void Main(string[] args)
         {
-            string lines = System.IO.File.ReadAllText(@"./input.txt").Replace("\r", string.Empty);
-            string[] elves = lines.Split("\n\n");
+            string input = System.IO.File.ReadAllText(@"./input.txt").Replace("\r", string.Empty);
+            string[] elves = input.Split("\n\n");
 
             var we = 
             elves.Select(x =>

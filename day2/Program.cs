@@ -16,21 +16,21 @@ namespace day2
                 { ' ', ""}
             };
         
-            static Dictionary<string, int> charToPoints = new Dictionary<string, int>()
+        static Dictionary<string, int> charToPoints = new Dictionary<string, int>()
             {
                 { "R", 1 },
                 { "P", 2 },
                 { "S", 3 }
             };
   
-            static Dictionary<string, string> getWin = new Dictionary<string, string>()
+        static Dictionary<string, string> getWin = new Dictionary<string, string>()
             {
                 { "R", "P" },
                 { "P", "S" },
                 { "S", "R" }
             };
 
-            static Dictionary<string, string> getLose = new Dictionary<string, string>()
+        static Dictionary<string, string> getLose = new Dictionary<string, string>()
             {
                 { "R", "S" },
                 { "P", "R" },

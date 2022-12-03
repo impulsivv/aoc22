@@ -5,6 +5,37 @@ namespace day2
 {
     class Program
     {
+        static Dictionary<char, string> charToChoice = new Dictionary<char, string>()
+            {
+                { 'A', "R" },
+                { 'B', "P" },
+                { 'C', "S"},
+                { 'X', "R" },
+                { 'Y', "P" },
+                { 'Z', "S"},
+                { ' ', ""}
+            };
+        
+            static Dictionary<string, int> charToPoints = new Dictionary<string, int>()
+            {
+                { "R", 1 },
+                { "P", 2 },
+                { "S", 3 }
+            };
+  
+            static Dictionary<string, string> getWin = new Dictionary<string, string>()
+            {
+                { "R", "P" },
+                { "P", "S" },
+                { "S", "R" }
+            };
+
+            static Dictionary<string, string> getLose = new Dictionary<string, string>()
+            {
+                { "R", "S" },
+                { "P", "R" },
+                { "S", "P" }
+            };
         static int gamerules(string enemy, string me)
         {
             //win 6, draw 3, loss 0
@@ -32,40 +63,6 @@ namespace day2
 
         static void Main(string[] args)
         {
-
-            var charToChoice = new Dictionary<char, string>()
-            {
-                { 'A', "R" },
-                { 'B', "P" },
-                { 'C', "S"},
-                { 'X', "R" },
-                { 'Y', "P" },
-                { 'Z', "S"},
-                { ' ', ""}
-            };
-
-            var charToPoints = new Dictionary<string, int>()
-            {
-                { "R", 1 },
-                { "P", 2 },
-                { "S", 3 }
-            };
-
-            // 
-            var getWin = new Dictionary<string, string>()
-            {
-                { "R", "P" },
-                { "P", "S" },
-                { "S", "R" }
-            };
-
-            var getLose = new Dictionary<string, string>()
-            {
-                { "R", "S" },
-                { "P", "R" },
-                { "S", "P" }
-            };
-
             string input = System.IO.File.ReadAllText(@"./input.txt").Replace("\r", string.Empty);
             var rounds = input.Split("\n").Select(x => x.Select(y => charToChoice[y]));
 
@@ -80,7 +77,6 @@ namespace day2
 
             ).Sum();
             Console.WriteLine(points);
-
 
             //part2
             var points2 = 

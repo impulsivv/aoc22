@@ -14,12 +14,11 @@ namespace day1
 
         static int overlap(int leftlower, int leftupper, int rightlower, int rightupper)
         {
-            IEnumerable<int> left = Enumerable.Range(leftlower, leftupper);
-            IEnumerable<int> right = Enumerable.Range(rightlower, rightupper);
+            IEnumerable<int> left = Enumerable.Range(leftlower, leftupper - leftlower + 1);
+            IEnumerable<int> right = Enumerable.Range(rightlower, rightupper - rightlower + 1);
             IEnumerable<int> inter = left.Intersect(right);
 
-            if(inter.Any()) return 1;
-            else return 0;
+            return inter.Any() ? 1 : 0;
 
         }
         static (int, int, int ,int) getBounds(string pair)
@@ -52,6 +51,7 @@ namespace day1
                     (int leftlower, int leftupper, int rightlower, int rightupper) = getBounds(pair);
                     return overlap(leftlower, leftupper, rightlower, rightupper);
                 } ).Sum());
+
         }
     }
 }

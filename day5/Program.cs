@@ -42,14 +42,27 @@ namespace day1
             string[] numbers = Regex.Split(move, @"\D+");
             return (Int32.Parse(numbers[1]), Int32.Parse(numbers[2]) - 1, Int32.Parse(numbers[3]) - 1);
         }
-        static string makeMove(string move, List<Stack<string>> fieldStack)
+        static void makeMove(string move, ref List<Stack<string>> fieldStack)
         {
             (int amount, int from, int to) = getMoveInfo(move);
             for(int i=0; i < amount; i++)
             {
                 fieldStack[to].Push(fieldStack[from].Pop());
             }
-            return move;
+        }
+
+        static void makeMoveMultiple(string move, ref List<Stack<string>> fieldStack)
+        {
+            (int amount, int from, int to) = getMoveInfo(move);
+            Stack<string> buffer = new Stack<string>();
+            for(int i=0; i < amount; i++)
+            {
+                buffer.Push(fieldStack[from].Pop());
+            }
+            foreach(string item in buffer)
+            {
+                fieldStack[to].Push(item);
+            }
         }
         static void Main(string[] args)
         {
@@ -58,26 +71,29 @@ namespace day1
             string field = String.Join("\n", fieldAndMoves[0].Split("\n").SkipLast(1).Reverse());
             int splitNumber = 4; // TODO: get information from field
             int fieldCount = (fieldAndMoves[0].Split("\n")[0].Length + 1) / splitNumber;
-
             string[] moves = fieldAndMoves[1].Split("\n");
-
             IEnumerable<string> itemGen = splitString(field, splitNumber);
-            Console.WriteLine(String.Join("newline", itemGen));
+ 
             //part1
-            Console.WriteLine(field);
-            Console.WriteLine(moves);
-            Console.WriteLine(fieldCount);
-
-            List<Stack<string>> fieldStack = createField(itemGen, fieldCount);
-            moves.Select(move => makeMove(move, fieldStack));
-            Console.WriteLine("hehe");
-            Console.WriteLine(fieldStack[0].Pop());
-            Console.WriteLine(fieldStack[1].Pop());
-            Console.WriteLine(fieldStack[2].Pop());
             
+            List<Stack<string>> fieldStack = createField(itemGen, fieldCount);            
+            foreach(string move in moves) makeMove(move, ref fieldStack);
 
+
+            string result = string.Empty;
+            foreach(Stack<string> stack in fieldStack) result += stack.Pop();
+
+            Console.WriteLine(result.Replace(" ",string.Empty).Replace("[",string.Empty).Replace("]",string.Empty));
+            
             //part2
-            //Console.WriteLine(we.OrderBy(p => p).Reverse().Take(3).Sum());
+            List<Stack<string>> fieldStack2 = createField(itemGen, fieldCount);            
+            foreach(string move in moves) makeMoveMultiple(move, ref fieldStack2);
+
+
+            string result2 = string.Empty;
+            foreach(Stack<string> stack in fieldStack2) result2 += stack.Pop();
+
+            Console.WriteLine(result2.Replace(" ",string.Empty).Replace("[",string.Empty).Replace("]",string.Empty));
         }
     }
 }

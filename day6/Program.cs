@@ -8,8 +8,7 @@ namespace day1
         static bool checkSlice(string slice, int length)
         {
             //if distinct.length is 4, then all chars are distinct
-            if ((String.Join("",slice.Distinct()).Length) == length) return true;
-            else return false;
+            return ((String.Join("",slice.Distinct()).Length) == length) ? true : false;
         }
         static void Main(string[] args)
         {
@@ -27,7 +26,7 @@ namespace day1
                     break;
                 } 
             }
-            
+
             //part2
             int j2 = 14;
             for(int i = 0; i <= input.Length - j2; i++)

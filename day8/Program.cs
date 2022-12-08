@@ -47,12 +47,12 @@ namespace day1
             int val = rowArray[col];
             
             int leftView = rowArray[.. col].Reverse().ToList().FindIndex(x => x >= val);
-            leftView = leftView == -1 ? rowArray[(col+1) ..].Length : leftView + 1;
+            leftView = leftView == -1 ? rowArray[.. col].Length : leftView + 1;
 
             int rightView = rowArray[(col+1) ..].ToList().FindIndex(x => x >= val);
             rightView = rightView == -1 ? rowArray[(col+1) ..].Length : rightView + 1;
  
-            int topView = colArray[.. row].ToList().FindIndex(x => x >= val);
+            int topView = colArray[.. row].Reverse().ToList().FindIndex(x => x >= val);
             topView = topView == -1 ? colArray[.. row].Length : topView + 1;
 
             int botView = colArray[(row+1) .. ].ToList().FindIndex(x => x >= val);

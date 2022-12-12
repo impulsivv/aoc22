@@ -5,40 +5,48 @@ namespace day1
 {
     class Program
     {
-        static string ReplaceFirst(string text, string search, string replace)
-        {
-            int pos = text.IndexOf(search);
-            if (pos < 0)
-            {
-                return text;
-            }
-            return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
-        }
-
         static int getValue(string[] values, Dictionary<string, string[]> folderStructure, int result)
         {
-            foreach(string val in values){
+            foreach(string val in values)
+            {
                 //Console.WriteLine(val);
-                if(val.StartsWith("dir")){
-                    string dir = val.Split(" ")[1];
-                    result += getValue(folderStructure[dir], folderStructure, result);
-                }else if(val == string.Empty)
+                if(val.StartsWith("dir"))
                 {
-                    //Console.WriteLine("fuck empty string" + result);
+                    string dir = val.Split(" ")[1];
+                    result = getValue(folderStructure[dir], folderStructure, result);
+                    
+                }else
+                {
+                    int number = Int32.Parse(val.Split(" ")[0]);
+                    result += number;
+                    
+                }
+            }
+            return result;   
+        }
+
+        static int getValue2(string[] values, Dictionary<string, string[]> folderStructure)
+        {
+            int result = 0;
+            foreach(string val in values)
+            {
+                //Console.WriteLine(val);
+                if(val.StartsWith("dir"))
+                {
+                    string dir = val.Split(" ")[1];
+                    result += getValue2(folderStructure[dir], folderStructure);
                 }else
                 {
                     int number = Int32.Parse(val.Split(" ")[0]);
                     result += number;
                 }
             }
-
-
             return result;
         }
         static void Main(string[] args)
         {
             string input = System.IO.File.ReadAllText(@"./input.txt").Replace("\r", string.Empty);
-            string[] commands = input.Split("$");
+            string[] commands = input.Split("$ ");
             string[] filteredCommands = commands.Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
             
             Dictionary<string, string[]> folderStructure = new Dictionary<string, string[]>();
@@ -47,14 +55,9 @@ namespace day1
             //part1
             foreach(string command in filteredCommands)
             {
-                
-                
-                if (command.Contains("cd")) dir = ReplaceFirst(command.Replace(" ", string.Empty).Replace("\n", string.Empty), "cd", string.Empty);
+                if (command.Contains("cd")) dir = command[3..].Replace("\n", string.Empty);
                 else{ // ls
-                    string[] clearCommand = ReplaceFirst(command, "ls\n", string.Empty).Split("\n")
-                                                        .Select(x => x.StartsWith(" ") ? ReplaceFirst(x, " ", string.Empty) : x).ToArray();
-
-                    //Console.WriteLine(command);
+                    string[] clearCommand = command.Replace("ls\n", string.Empty).Split("\n").Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
                     switch(dir)
                     {
                         case "/" :
@@ -77,29 +80,32 @@ namespace day1
                 
             }
 
-/*
-            Dictionary<string, string> cwd = new Dictionary<string, string>();
-            cwd.Add("/", " dir a \n 14848514 b.txt \n 8504156 c.dat \n dir d");
-            cwd.Add("a", " dir e \n 29116 f \n 2557 g \n 62596 h.lst");
-*/
+
             foreach(var key in folderStructure)
             {
                 int result = 0;
                 //Console.WriteLine(key.Key + "-----");
-                //foreach(var we in key.Value) Console.WriteLine("|"+ we);
+                foreach(var we in key.Value) Console.WriteLine( key.Key + "|"+ we);
                 //Console.WriteLine();
             }
             
             foreach(var key in folderStructure)
             {
                 int result = 0;
-                Console.WriteLine(key.Key + "-----" + getValue( key.Value, folderStructure, result));
+                int endresult = 0;
+                endresult += getValue2( key.Value, folderStructure);
+                //Console.WriteLine(key.Key + "-----" + getValue( folderStructure[key.Key], folderStructure, result));
+                Console.WriteLine(endresult);
+                if(key.Key != "/")
+                {
+                       
+                }
+
                 //Console.WriteLine();
             }
-
-
             //part2
             //Console.WriteLine(we.OrderBy(p => p).Reverse().Take(3).Sum());
+            
         }
     }
 }

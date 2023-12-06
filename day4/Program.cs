@@ -35,22 +35,64 @@ namespace day1
         static void Main(string[] args)
         {
             string input = System.IO.File.ReadAllText(@"./input.txt").Replace("\r", string.Empty);
-            string[] pairs = input.Split("\n");
-
+            string[] lines = input.Split("\n", StringSplitOptions.RemoveEmptyEntries);
 
             //part1
-            Console.WriteLine(pairs.Select(pair =>
-                {
-                    (int leftlower, int leftupper, int rightlower, int rightupper) = getBounds(pair);
-                    return contains(leftlower, leftupper, rightlower, rightupper);
-                } ).Sum());
+            double gameResult = 0;
+            foreach (var card in lines)
+            {
+                int[] cardPick = card
+                                .Split(": ")
+                                .Last()
+                                .Split(" | ")
+                                .First()
+                                .Split(" ", StringSplitOptions.RemoveEmptyEntries)
+                                .Select(x => int.Parse(x))
+                                .ToArray();
+
+                int[] cardwin = card
+                                .Split(": ")
+                                .Last()
+                                .Split(" | ")
+                                .Last()
+                                .Split(" ", StringSplitOptions.RemoveEmptyEntries)
+                                .Select(x => int.Parse(x))
+                                .ToArray();
+
+                gameResult += (int)Math.Pow(2, cardwin.Intersect(cardPick).Count() -1);
+            } 
+            Console.WriteLine(gameResult);
 
             //part2
-            Console.WriteLine(pairs.Select(pair =>
-                {
-                    (int leftlower, int leftupper, int rightlower, int rightupper) = getBounds(pair);
-                    return overlap(leftlower, leftupper, rightlower, rightupper);
-                } ).Sum());
+            Dictionary<int, int> copies = new();
+            for (int i = 0; i < lines.Count(); i++)
+                copies.Add(i, 1);
+            
+            for (int i = 0; i < lines.Count(); i++)
+            {
+                int[] cardPick = lines[i]
+                                .Split(": ")
+                                .Last()
+                                .Split(" | ")
+                                .First()
+                                .Split(" ", StringSplitOptions.RemoveEmptyEntries)
+                                .Select(x => int.Parse(x))
+                                .ToArray();
+
+                int[] cardwin = lines[i]
+                                .Split(": ")
+                                .Last()
+                                .Split(" | ")
+                                .Last()
+                                .Split(" ", StringSplitOptions.RemoveEmptyEntries)
+                                .Select(x => int.Parse(x))
+                                .ToArray();
+                //Console.WriteLine(pick.First());
+                var foo = cardwin.Intersect(cardPick);
+                for (int times = 1; times < foo.Count() + 1; times++)
+                        copies[i + times] += copies[i];
+            } 
+            Console.WriteLine(copies.Values.Sum());
 
         }
     }

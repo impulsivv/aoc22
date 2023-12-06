@@ -5,40 +5,28 @@ namespace day1
 {
     class Program
     {
-        static bool checkSlice(string slice, int length)
+        static long CheckRace( (long time, long dist) next)
         {
-            //if distinct.length is 4, then all chars are distinct
-            return ((String.Join("",slice.Distinct()).Length) == length) ? true : false;
+            long acc = 0;
+            for (int i = 0; i < next.time; i++)
+                if (i * (next.time - i) > next.dist)
+                    acc++;
+            return acc;
         }
         static void Main(string[] args)
         {
             string input = System.IO.File.ReadAllText(@"./input.txt").Replace("\r", string.Empty);
-            
+            string[] lines = input.Split("\n", StringSplitOptions.RemoveEmptyEntries);
+            long[] times = lines[0].Split(":").Last().Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(x => long.Parse(x)).ToArray();
+            long[] dists = lines[1].Split(":").Last().Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(x => long.Parse(x)).ToArray();
             //part1
-            Console.WriteLine(input);
-            int j1 = 4;
-            for(int i = 0; i <= input.Length - j1; i++)
-            {
-                string slice = input.Substring(i,j1);
-                if (checkSlice(slice, j1))
-                {
-                    Console.WriteLine(i+j1);
-                    break;
-                } 
-            }
-
+            (long time, long dist)[] races = times.Zip(dists, (l,n) => (l,n)).ToArray();
+            long result = races.Select(x => CheckRace(x)).Aggregate(1, (long acc, long next) => acc * next);
+            Console.WriteLine(result);
             //part2
-            int j2 = 14;
-            for(int i = 0; i <= input.Length - j2; i++)
-            {
-                string slice = input.Substring(i,j2);
-                if (checkSlice(slice, j2))
-                {
-                    Console.WriteLine(i+j2);
-                    break;
-                } 
-
-            }
+            string t = lines[0].Split(":").Last().Split(" ", StringSplitOptions.RemoveEmptyEntries).Aggregate("",(string acc, string next) => acc + next);
+            string d = lines[1].Split(":").Last().Split(" ", StringSplitOptions.RemoveEmptyEntries).Aggregate("",(string acc, string next) => acc + next);
+            Console.WriteLine(CheckRace( (long.Parse(t), long.Parse(d)) ));
         }
     }
 }

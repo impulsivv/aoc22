@@ -1,94 +1,67 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace day2
 {
     class Program
     {
-        static Dictionary<char, string> charToChoice = new Dictionary<char, string>()
-            {
-                { 'A', "R" },
-                { 'B', "P" },
-                { 'C', "S"},
-                { 'X', "R" },
-                { 'Y', "P" },
-                { 'Z', "S"},
-                { ' ', ""}
-            };
         
-        static Dictionary<string, int> charToPoints = new Dictionary<string, int>()
-            {
-                { "R", 1 },
-                { "P", 2 },
-                { "S", 3 }
-            };
-  
-        static Dictionary<string, string> getWin = new Dictionary<string, string>()
-            {
-                { "R", "P" },
-                { "P", "S" },
-                { "S", "R" }
-            };
-
-        static Dictionary<string, string> getLose = new Dictionary<string, string>()
-            {
-                { "R", "S" },
-                { "P", "R" },
-                { "S", "P" }
-            };
-        static int gamerules(string enemy, string me)
+        static int DecideRound(string round)
         {
-            //win 6, draw 3, loss 0
-            //enemy A Rock, B Paper, C Scissor
-            //me 2 Y Paper, 1 X Rock  ,3 Z Scissor
-            if (enemy == me) return 3;
-            
-            if ((me=="R" && enemy=="S")
-             || (me=="S" && enemy=="P")
-             || (me=="P" && enemy=="R")) return 6;
-             
-            else return 0;
+            Dictionary<string, int> stuff = new Dictionary<string, int>{ {"blue", 14}, {"red", 12}, {"green", 13} };
+            foreach (var picks in round.Split(", "))
+            {
+                stuff[picks.Split(" ").Last()] -= int.Parse(picks.Split(" ").First());
+            }
+            if (stuff.Any(x => x.Value < 0))
+                return 0;
+            else
+                return 1;
         }
 
-        static int strategy(string enemy, string me, Dictionary<string, int> charToPoints,
-                            Dictionary<string, string> getWin, Dictionary<string, string> getLose)
+        static (int,int,int) DecideRound2(string round)
         {
-            // me Rock = lose, Paper = draw, Scissor = win
-            if(me=="R") return ((0 + charToPoints[getLose[enemy]]));
-
-            else if(me=="P") return ((3 + charToPoints[enemy]));
-
-            else return ((6 + charToPoints[getWin[enemy]]));    
+            Dictionary<string, int> stuff = new Dictionary<string, int>{ {"blue", 1}, {"red", 1}, {"green", 1} };
+            foreach (var picks in round.Split(", "))
+            {
+                stuff[picks.Split(" ").Last()] = int.Parse(picks.Split(" ").First()) > stuff[picks.Split(" ").Last()] ?
+                    int.Parse(picks.Split(" ").First()):
+                    stuff[picks.Split(" ").Last()];
+            }
+            return (stuff["blue"],stuff["red"],stuff["green"]);
         }
 
         static void Main(string[] args)
         {
             string input = System.IO.File.ReadAllText(@"./input.txt").Replace("\r", string.Empty);
-            var rounds = input.Split("\n").Select(x => x.Select(y => charToChoice[y]));
-
+            string[] lines = input.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            int result = 0;
             //part1
-            var points = 
-            rounds.Select(round =>
-                {
-                var enemy = string.Join("",round.Take(1));
-                var me = string.Join("",round.Skip(1).Take(2));
-                return (charToPoints[me] + gamerules(enemy, me));
-                }
+            foreach (var line in lines)
+            {
+                int gameId = int.Parse(line.Split(": ").First().Split(" ").Last());
+                int we = line.Split(": ").Last().Split("; ").Select(x => DecideRound(x)).Aggregate(1, (int accu, int next) => accu * next);
 
-            ).Sum();
-            Console.WriteLine(points);
+                result += gameId * we;
+            }
+            Console.WriteLine(result);
 
             //part2
-            var points2 = 
-            rounds.Select(round =>
-                {
-                var enemy = string.Join("", round.Take(1));
-                var me = string.Join("", round.Skip(1).Take(2));
-                return (strategy(enemy, me, charToPoints, getWin, getLose));
-                }
+            result = 0;
+            foreach (var line in lines)
+            {
+                int gameId = int.Parse(line.Split(": ").First().Split(" ").Last());
+                (int,int,int) we = line.Split(": ").Last().Split("; ")
+                                .Select(x => DecideRound2(x))
+                                .Aggregate((0,0,0), ((int,int,int) accu, (int,int,int) next) 
+                                    => (Math.Max(next.Item1,accu.Item1),Math.Max(next.Item2,accu.Item2),Math.Max(next.Item3,accu.Item3))
+                                );
 
-            ).Sum();
-            Console.WriteLine(points2);
+                result += we.Item1 * we.Item2 * we.Item3;
+            }
+            Console.WriteLine(result);
 
         }
     }

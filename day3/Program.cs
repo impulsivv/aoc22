@@ -1,115 +1,63 @@
 ﻿using System;
-using System.Data;
-using System.Dynamic;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.RegularExpressions;
 
 namespace day1
 {
     class Program
     {
-        static void GetSurroundedCoords((int srow, int scol) sChar, ref HashSet<(int row, int col)> coords)
+        static char commonChar(string left, string right)
         {
-            for (int row = -1; row < 2; row++)
-                for (int col = -1; col < 2; col++)
-                    coords.Add( (sChar.srow + row, sChar.scol + col) );
+            for (int i = 0; i < left.Length; i++)
+                for (int j = 0; j < right.Length; j++)
+                    if (left[i] == right[j]) return left[i];
+            return ' ';
         }
 
-        static bool CheckIfNeeded(Match m, HashSet<(int row, int col)> coords, int row)
+        static string commonString(string left, string right)
         {
-            for (int col = 0; col < m.Length; col++)
-                if (coords.Contains( (row, m.Index + col) ))
-                    return true;
-
-            return false;
+            HashSet<char> commons = new HashSet<char>();
+            for (int i = 0; i < left.Length; i++)
+                for (int j = 0; j < right.Length; j++)
+                    if (left[i] == right[j]) commons.Add(left[i]);
+            return string.Join("",commons);
         }
 
-        static int CheckIfTwoAround(MatchCollection m1, MatchCollection m2, MatchCollection m3, (int row, int col) coord)
+        static char commonCharWithThree(string first, string second, string third)
         {
-            HashSet<(int row, int col)> coords = new();
-            GetSurroundedCoords(coord, ref coords);
-            List<int> results = new();
+            var ab = commonString(first, second);
+            var bc = commonString(second, third);
+            var ca = commonString(third, first);
 
-            foreach (Match m in m1)
-            {
-                for (int col = 0; col < m.Length; col++)
-                    if (coords.Contains( (coord.row - 1, m.Index + col) ))
-                        results.Append(int.Parse(m.Value));
-            }
-            foreach (Match m in m2)
-            {
-                for (int col = 0; col < m.Length; col++)
-                    if (coords.Contains( (coord.row, m.Index + col) ))
-                        results.Append(int.Parse(m.Value));
-            }
-            foreach (Match m in m3)
-            {
-                for (int col = 0; col < m.Length; col++)
-                    if (coords.Contains( (coord.row + 1, m.Index + col) ))
-                        results.Append(int.Parse(m.Value));
-            }
-
-            if (results.Count == 2)
-                return results.Aggregate(1, (int accu, int next) => accu * next);
-            else return 0;
-
+            return char.Parse(commonString(ab, commonString(bc, ca)));
         }
-        //x - 48
         static void Main(string[] args)
         {
             string input = System.IO.File.ReadAllText(@"./input.txt").Replace("\r", string.Empty);
-            string[] lines = input.Split("\n");
+            string[] bags = input.Split("\n");
 
-            char[][] matrix = lines.Select(x => x.ToArray()).ToArray();
-            char[] sChars = new char[]{'/','*','%','+','-','#','&','=','$','@'};
             //part1
-            int p1Result = 0;
-            HashSet<(int row, int col)> coords = new();
-            
-            for (int row = 0; row < matrix.Length; row++)
-                for (int col = 0; col < matrix[row].Length; col++)
-                    if (sChars.Contains(matrix[row][col])) 
-                        GetSurroundedCoords((row, col), ref coords);
-
-            Regex regexNumbers = new Regex(@"\d+");
-            for (int row = 0; row < lines.Length; row++)
-                foreach (Match m in regexNumbers.Matches(lines[row]))
-                    p1Result += CheckIfNeeded(m, coords, row) ? int.Parse(m.Value) : 0;
-
-            Console.WriteLine(p1Result);
-
-
-
-            
-            //part2
-            int p2Result = 0;
-            HashSet<(int row, int index, int len)> coordsNums = new();
-
-            Regex regexStar = new Regex(@"\*");
-            for (int row = 0; row < lines.Length; row++)
-            {   
-                //var nums = regexNumbers.Matches(lines[row]);
-                //foreach (Match m in nums) coordsNums.Add( (row, m.Index, m.Length) );
-                    //p2Result += CheckIfNeeded(m, coords, row) ? int.Parse(m.Value) : 0;
-
-                var stars = regexStar.Matches(lines[row]);
-                foreach (Match m in stars)
+            var commons = 
+            bags.Select(x =>
                 {
-                    (int row, int col) starCoord = (row, m.Index);
-                    string row1 = lines[row-1];
-                    string row2 = lines[row];
-                    string row3 = lines[row+1];
-                    var nums1 = regexNumbers.Matches(row1);
-                    var nums2 = regexNumbers.Matches(row2);
-                    var nums3 = regexNumbers.Matches(row3);
+                    var (left, right) = (x.Substring(0, x.Length / 2), x.Substring( x.Length / 2));
+                    char common = commonChar(left, right);
+                    return common;
+                }).Select(c => char.IsLower(c) ? (int)c - 97 + 1 : (int)c - 65 + 27 );
+            
+            Console.WriteLine(commons.Sum());
 
-                    p2Result += CheckIfTwoAround(nums1,nums2,nums3,starCoord); 
 
+            //part2
+            List<int> prios = new List<int>();
+            for (int i=0; i< bags.Length; i++)
+            {
+                if(i % 3 == 2)
+                {
+                    char prio = commonCharWithThree(bags[i-2], bags[i-1], bags[i]);
+                    prios.Add(char.IsLower(prio) ? (int)prio - 97 + 1 : (int)prio - 65 + 27 ); 
                 }
             }
-            Console.WriteLine(p2Result);
+            Console.WriteLine(prios.Sum());
     
         }
     }

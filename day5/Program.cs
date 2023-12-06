@@ -1,119 +1,99 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 
 namespace day1
 {
     class Program
     {
-        static List<long> SetSeeds(List<long> seed, string map)
+        static IEnumerable<string> splitString(string str, int n)
         {
-            Console.WriteLine("doin" + map);
-            List<long> newSeed = new();
-            for (int i = 0; i < seed.Count; i++)
-                {   
-                    bool found = false;
-                    string[] numToNum = map.Split(":").Last().Split("\n", StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var item in numToNum)
-                    {
-                        long[] instruction = item.Split(" ", StringSplitOptions.RemoveEmptyEntries).AsParallel().Select(x => long.Parse(x)).ToArray();
-                        //instruction: Dstart | Sstart | range
-                            //mapTo.Add(instruction[1] + i, instruction[0] + i);
-                        if (!found && seed[i] < instruction[1] + instruction[2] && seed[i] >= instruction[1] )
-                        {
-                            found = true;
-                            newSeed.Add(instruction[0] + Math.Abs(seed[i] - instruction[1]));
-                        }
+            if (String.IsNullOrEmpty(str) || n < 1)
+            {
+                throw new ArgumentException();
+            }
 
-                    }
+            return Enumerable.Range(0, str.Length / n)
+                            .Select(i => str.Substring(i * n, n));
+        }
+        static List<Stack<string>> createField(IEnumerable<string> field, int fieldCount)
+        {
+            //TODO: makes this not so ugly, god may forgive me
+            List<Stack<string>> fieldStack = new List<Stack<string>>();
+            for(int i=0; i < fieldCount; i++)
+            {
+                fieldStack.Add(new Stack<string>());
+            }
+            int j = 0;
+            foreach(string item in field)
+            {
+                if(j == fieldCount) j=0;
 
+                if(!item.All(Char.IsWhiteSpace)) fieldStack[j].Push(item);
+                j++;
+            }
+            return fieldStack;
+        }
 
-                } 
-            return newSeed;
+        static (int amount, int from, int to) getMoveInfo(string move)
+        {
+            // allways 3 numbers, so its hardcoded, for w.e. reason first element is emptystring ¯\_(ツ)_/¯
+            // -1 because indexing is from 1 for some reason
+            string[] numbers = Regex.Split(move, @"\D+");
+            return (Int32.Parse(numbers[1]), Int32.Parse(numbers[2]) - 1, Int32.Parse(numbers[3]) - 1);
+        }
+        static void makeMove(string move, ref List<Stack<string>> fieldStack)
+        {
+            (int amount, int from, int to) = getMoveInfo(move);
+            for(int i=0; i < amount; i++)
+            {
+                fieldStack[to].Push(fieldStack[from].Pop());
+            }
+        }
+
+        static void makeMoveMultiple(string move, ref List<Stack<string>> fieldStack)
+        {
+            (int amount, int from, int to) = getMoveInfo(move);
+            Stack<string> buffer = new Stack<string>();
+            for(int i=0; i < amount; i++)
+            {
+                buffer.Push(fieldStack[from].Pop());
+            }
+            foreach(string item in buffer)
+            {
+                fieldStack[to].Push(item);
+            }
         }
         static void Main(string[] args)
         {
             string input = System.IO.File.ReadAllText(@"./input.txt").Replace("\r", string.Empty);
-            string[] maps = input.Split("\n\n", StringSplitOptions.RemoveEmptyEntries);
+            string[] fieldAndMoves = input.Split("\n\n");
+            string field = String.Join("\n", fieldAndMoves[0].Split("\n").SkipLast(1).Reverse());
+            int splitNumber = 4; // TODO: get information from field
+            int fieldCount = (fieldAndMoves[0].Split("\n")[0].Length + 1) / splitNumber;
+            string[] moves = fieldAndMoves[1].Split("\n");
+            IEnumerable<string> itemGen = splitString(field, splitNumber);
+ 
             //part1
-            long[] seeds = maps.First().Split(": ").Last().Split(" ", StringSplitOptions.RemoveEmptyEntries).AsParallel().Select(x => long.Parse(x)).ToArray();
             
-    	    List<long> newSeeds = new();
-            for (long i = seeds[0]; i < seeds[0] + seeds[1]; i++)
-                newSeeds.Add(i);
-            for (long i = seeds[2]; i < seeds[2] + seeds[3]; i++)
-                newSeeds.Add(i);
-            /* 
-            for (long i = 1; i < seeds.Length; i += 2)
-                newSeeds.Add(i);
-            //Console.WriteLine(newSeeds.Contains(seeds[1]));
-           
-            foreach (var map in maps.Skip(1))
-            {
-                for (int i = 0; i < seeds.Length; i++)
-                {   
-                    bool found = false;
-                    string[] numToNum = map.Split(":").Last().Split("\n", StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var item in numToNum)
-                    {
-                        long[] instruction = item.Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(x => long.Parse(x)).ToArray();
-                        //instruction: Dstart | Sstart | range
-                            //mapTo.Add(instruction[1] + i, instruction[0] + i);
-                        if (seeds[i] < instruction[1] + instruction[2] && seeds[i] >= instruction[1] && !found)
-                        {
-                            found = true;
-                            seeds[i] = instruction[0] + Math.Abs(seeds[i] - instruction[1]);
-                        }
-
-                    }
+            List<Stack<string>> fieldStack = createField(itemGen, fieldCount);            
+            foreach(string move in moves) makeMove(move, ref fieldStack);
 
 
-                } 
-                //Dictionary<long, long> mapTo = new();
-                
- 
-            }
-            Console.WriteLine(seeds.Min());
-*/
+            string result = string.Empty;
+            foreach(Stack<string> stack in fieldStack) result += stack.Pop();
+
+            Console.WriteLine(result.Replace(" ",string.Empty).Replace("[",string.Empty).Replace("]",string.Empty));
+            
             //part2
-            //Console.WriteLine(maps.Aggregate(newSeeds, (List<long> acc, string map) => SetSeeds(acc, map)).Min());
-            
-            foreach (var map in maps.Skip(1))
-            {
-                Console.WriteLine("doin" + map);
-                long[][] numToNum = map
-                                    .Split(":")
-                                    .Last()
-                                    .Split("\n", StringSplitOptions.RemoveEmptyEntries)
-                                    .Select(x => x
-                                                .Split(" ", StringSplitOptions.RemoveEmptyEntries)
-                                                .Select(x => long.Parse(x))
-                                                .ToArray()
-                                    ).ToArray();
-                for (int i = 0; i < newSeeds.Count; i++)
-                {   
-                    bool found = false;
-                    foreach (long[] instruction in numToNum)
-                    {
-                        //long[] instruction = item.Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(x => long.Parse(x)).ToArray();
-                        //instruction: Dstart | Sstart | range
-                            //mapTo.Add(instruction[1] + i, instruction[0] + i);
-                        if (!found && newSeeds[i] < instruction[1] + instruction[2] && newSeeds[i] >= instruction[1]  )
-                        {
-                            found = true;
-                            newSeeds[i] = instruction[0] + Math.Abs(newSeeds[i] - instruction[1]);
-                        }
-
-                    }
+            List<Stack<string>> fieldStack2 = createField(itemGen, fieldCount);            
+            foreach(string move in moves) makeMoveMultiple(move, ref fieldStack2);
 
 
-                } 
-                //Dictionary<long, long> mapTo = new();
-                
- 
-            }
-            Console.WriteLine(newSeeds.Min());
+            string result2 = string.Empty;
+            foreach(Stack<string> stack in fieldStack2) result2 += stack.Pop();
+
+            Console.WriteLine(result2.Replace(" ",string.Empty).Replace("[",string.Empty).Replace("]",string.Empty));
         }
     }
 }
